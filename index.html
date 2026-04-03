@@ -728,6 +728,180 @@
             .header { min-height: 44px; padding: 6px 16px; }
             .quick-bar { display: none; }
         }
+
+        /* ============================================================
+           PWA INSTALL BANNER  (slides up from bottom)
+        ============================================================ */
+        .pwa-banner {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, #1a2a26 0%, #1E2128 100%);
+            border-top: 1px solid rgba(0,212,170,0.2);
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 20px 20px calc(20px + var(--safe-bottom));
+            z-index: 500;
+            transform: translateY(110%);
+            transition: transform 0.42s cubic-bezier(0.34,1.2,0.64,1);
+            box-shadow: 0 -12px 40px rgba(0,0,0,0.5);
+        }
+        .pwa-banner.visible { transform: translateY(0); }
+
+        [data-theme="light"] .pwa-banner {
+            background: linear-gradient(135deg, #e8f5f1 0%, #f0f2f7 100%);
+            border-top: 1px solid rgba(0,155,125,0.25);
+        }
+
+        .pwa-banner-drag {
+            width: 40px; height: 4px;
+            background: var(--chip-text);
+            border-radius: 3px; opacity: 0.3;
+            margin: 0 auto 16px;
+        }
+
+        .pwa-banner-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .pwa-banner-icon {
+            width: 54px; height: 54px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #00D4AA, #00a880);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            box-shadow: 0 6px 20px rgba(0,212,170,0.35);
+        }
+
+        .pwa-banner-text { flex: 1; }
+        .pwa-banner-title {
+            font-size: 16px; font-weight: 800;
+            color: var(--status-text);
+            margin-bottom: 3px;
+        }
+        .pwa-banner-sub {
+            font-size: 12px;
+            color: var(--chip-text);
+            line-height: 1.4;
+        }
+
+        .pwa-banner-close {
+            background: var(--surface);
+            border: none; border-radius: 50%;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--chip-text);
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 16px;
+            touch-action: manipulation;
+            align-self: flex-start;
+        }
+
+        /* Feature bullets */
+        .pwa-features {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .pwa-feat {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 5px 11px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--chip-text);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .pwa-feat span { font-size: 13px; }
+
+        /* Main CTA install button */
+        .pwa-install-cta {
+            width: 100%;
+            background: linear-gradient(135deg, #00D4AA, #00a880);
+            color: #000;
+            border: none;
+            border-radius: 18px;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            touch-action: manipulation;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            box-shadow: 0 8px 24px rgba(0,212,170,0.4);
+            letter-spacing: 0.3px;
+        }
+        .pwa-install-cta:active { transform: scale(0.96); box-shadow: 0 4px 12px rgba(0,212,170,0.3); }
+        .pwa-install-cta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* iOS specific instructions inside banner */
+        .pwa-ios-steps {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .pwa-ios-steps.show { display: flex; }
+        .pwa-ios-step {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 10px 14px;
+        }
+        .pwa-ios-step-num {
+            width: 24px; height: 24px;
+            background: var(--accent);
+            color: #000;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800;
+            flex-shrink: 0;
+        }
+        .pwa-ios-step-text { font-size: 13px; color: var(--status-text); font-weight: 600; }
+        .pwa-ios-step-icon { font-size: 18px; margin-left: auto; }
+
+        /* Floating Install FAB — always visible once banner dismissed */
+        .pwa-fab {
+            position: absolute;
+            bottom: calc(100px + var(--safe-bottom));
+            right: 18px;
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, #00D4AA, #00a880);
+            border: none; border-radius: 18px;
+            color: #000;
+            display: none;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 6px 20px rgba(0,212,170,0.45);
+            touch-action: manipulation;
+            transition: transform 0.15s, box-shadow 0.15s;
+            animation: fab-bounce 2.5s ease-in-out infinite;
+        }
+        .pwa-fab.show { display: flex; }
+        .pwa-fab:active { transform: scale(0.9); }
+
+        @keyframes fab-bounce {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-5px); }
+        }
+
+        /* Installed state — show success in banner */
+        .pwa-installed-msg {
+            display: none;
+            text-align: center;
+            padding: 10px 0 4px;
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .pwa-installed-msg.show { display: block; }
     </style>
 </head>
 
@@ -1003,6 +1177,65 @@
     </div>
 
     <div class="home-ind"></div>
+
+    <!-- ============================================================
+         PWA INSTALL BANNER
+    ============================================================ -->
+    <div class="pwa-banner" id="pwa-banner" role="dialog" aria-label="Install app">
+
+        <div class="pwa-banner-drag"></div>
+
+        <div class="pwa-banner-row">
+            <div class="pwa-banner-icon">⚡</div>
+            <div class="pwa-banner-text">
+                <div class="pwa-banner-title">Install Premium Calculator</div>
+                <div class="pwa-banner-sub">Add to Home Screen for the best experience</div>
+            </div>
+            <button class="pwa-banner-close" onclick="dismissBanner()" aria-label="Dismiss">✕</button>
+        </div>
+
+        <div class="pwa-features">
+            <div class="pwa-feat"><span>⚡</span> Instant open</div>
+            <div class="pwa-feat"><span>📶</span> Works offline</div>
+            <div class="pwa-feat"><span>🔔</span> No browser bar</div>
+            <div class="pwa-feat"><span>💾</span> Saves history</div>
+        </div>
+
+        <!-- Android / Desktop: one-tap install button -->
+        <button class="pwa-install-cta" id="pwa-cta-btn" onclick="pwaBannerInstall()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+            Install App — It's Free
+        </button>
+
+        <!-- iOS: step-by-step instructions (shown instead of button on iOS) -->
+        <div class="pwa-ios-steps" id="pwa-ios-steps">
+            <div class="pwa-ios-step">
+                <div class="pwa-ios-step-num">1</div>
+                <div class="pwa-ios-step-text">Tap the <strong>Share</strong> button at the bottom</div>
+                <div class="pwa-ios-step-icon">⬆️</div>
+            </div>
+            <div class="pwa-ios-step">
+                <div class="pwa-ios-step-num">2</div>
+                <div class="pwa-ios-step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+                <div class="pwa-ios-step-icon">📲</div>
+            </div>
+            <div class="pwa-ios-step">
+                <div class="pwa-ios-step-num">3</div>
+                <div class="pwa-ios-step-text">Tap <strong>Add</strong> — you're done!</div>
+                <div class="pwa-ios-step-icon">✅</div>
+            </div>
+        </div>
+
+        <div class="pwa-installed-msg" id="pwa-installed-msg">
+            🎉 App installed successfully! You can close this.
+        </div>
+    </div>
+
+    <!-- Floating Action Button — visible after banner dismissed -->
+    <button class="pwa-fab" id="pwa-fab" onclick="showBanner()" aria-label="Install App" title="Install App">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+    </button>
+
 </div>
 
 <script>
@@ -1662,71 +1895,167 @@ updateScreen();
 
 
 /* ================================================================
-   PWA — SERVICE WORKER REGISTRATION + INSTALL PROMPT
+   PWA — SERVICE WORKER REGISTRATION
 ================================================================ */
-(function initPWA() {
-
-    /* --- Register Service Worker --- */
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => {
-                    console.log('[PWA] SW registered, scope:', reg.scope);
-                    reg.addEventListener('updatefound', () => {
-                        const nw = reg.installing;
-                        nw.addEventListener('statechange', () => {
-                            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-                                showToast('🔄 Update available — reload to refresh');
-                            }
-                        });
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => {
+                console.log('[PWA] SW registered, scope:', reg.scope);
+                reg.addEventListener('updatefound', () => {
+                    const nw = reg.installing;
+                    nw.addEventListener('statechange', () => {
+                        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                            showToast('🔄 Update available — reload to refresh');
+                        }
                     });
-                })
-                .catch(err => console.warn('[PWA] SW registration failed:', err));
-        });
+                });
+            })
+            .catch(err => console.warn('[PWA] SW registration failed:', err));
+    });
+}
+
+/* ================================================================
+   PWA — SMART INSTALL SYSTEM
+================================================================ */
+(function initInstall() {
+
+    const banner    = document.getElementById('pwa-banner');
+    const fab       = document.getElementById('pwa-fab');
+    const ctaBtn    = document.getElementById('pwa-cta-btn');
+    const iosSteps  = document.getElementById('pwa-ios-steps');
+    const instMsg   = document.getElementById('pwa-installed-msg');
+    const headerBtn = document.getElementById('install-btn');
+
+    let deferredPrompt   = null;
+    let bannerDismissed  = false;
+    let isInstalled      = false;
+
+    /* ---- Detect platform ---- */
+    const isIOS        = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid    = /android/i.test(navigator.userAgent);
+    const isStandalone = window.navigator.standalone === true ||
+                         window.matchMedia('(display-mode: standalone)').matches;
+
+    /* Already running as installed PWA — hide everything */
+    if (isStandalone) {
+        console.log('[PWA] Running in standalone mode — already installed');
+        return;
     }
 
-    /* --- Android/Desktop Install Prompt --- */
-    let deferredPrompt = null;
-    const installBtn = document.getElementById('install-btn');
+    /* ---- Check if previously dismissed ---- */
+    const dismissed = (() => { try { return localStorage.getItem('pwa-banner-dismissed'); } catch(e) { return null; } })();
 
+    /* ---- ANDROID / DESKTOP: wait for beforeinstallprompt ---- */
     window.addEventListener('beforeinstallprompt', e => {
         e.preventDefault();
         deferredPrompt = e;
-        if (installBtn) installBtn.style.display = 'flex';
-        console.log('[PWA] Install prompt ready');
+        console.log('[PWA] Install prompt captured');
+
+        /* Show header button always */
+        if (headerBtn) headerBtn.style.display = 'flex';
+
+        /* Auto-show banner after 2s if not dismissed before */
+        if (!dismissed && !bannerDismissed) {
+            setTimeout(() => showBanner(), 2000);
+        } else {
+            /* If dismissed before, just show the FAB */
+            if (fab) fab.classList.add('show');
+        }
     });
 
-    window.pwaTriggerInstall = async function () {
-        if (!deferredPrompt) { showToast('Already installed or not supported'); return; }
-        haptic(30);
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            showToast('✅ Installing…');
-            if (installBtn) installBtn.style.display = 'none';
+    /* ---- iOS: show step-by-step instructions ---- */
+    if (isIOS) {
+        /* Swap CTA button for iOS steps */
+        if (ctaBtn) ctaBtn.style.display = 'none';
+        if (iosSteps) iosSteps.classList.add('show');
+
+        if (!dismissed) {
+            setTimeout(() => showBanner(), 2000);
         } else {
-            showToast('Install cancelled');
+            if (fab) fab.classList.add('show');
         }
-        deferredPrompt = null;
+    }
+
+    /* ---- App installed event ---- */
+    window.addEventListener('appinstalled', () => {
+        isInstalled = true;
+        console.log('[PWA] App installed!');
+        haptic(50);
+        if (ctaBtn)  { ctaBtn.disabled = true; ctaBtn.textContent = '✅ Installed!'; }
+        if (instMsg) instMsg.classList.add('show');
+        if (headerBtn) headerBtn.style.display = 'none';
+        if (fab) fab.classList.remove('show');
+        showToast('🎉 App installed! Open from Home Screen.');
+        setTimeout(() => dismissBanner(), 3000);
+    });
+
+    /* ---- GLOBAL: show banner ---- */
+    window.showBanner = function () {
+        if (isInstalled) return;
+        if (banner) banner.classList.add('visible');
+        if (fab) fab.classList.remove('show');
     };
 
-    window.addEventListener('appinstalled', () => {
-        showToast('🎉 App installed successfully!');
-        if (installBtn) installBtn.style.display = 'none';
-        deferredPrompt = null;
-    });
-
-    /* --- iOS Safari hint (no beforeinstallprompt support) --- */
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.navigator.standalone === true;
-    if (isIOS && !isStandalone) {
-        const alreadyShown = (() => { try { return localStorage.getItem('pwa-ios-hint'); } catch(e) { return null; } })();
-        if (!alreadyShown) {
-            setTimeout(() => {
-                showToast('📲 Tap Share → "Add to Home Screen" to install');
-                try { localStorage.setItem('pwa-ios-hint', '1'); } catch(e) {}
-            }, 3500);
+    /* ---- GLOBAL: dismiss banner ---- */
+    window.dismissBanner = function () {
+        if (banner) banner.classList.remove('visible');
+        bannerDismissed = true;
+        try { localStorage.setItem('pwa-banner-dismissed', '1'); } catch(e) {}
+        /* Show FAB so user can reinstall anytime */
+        if (!isInstalled && (deferredPrompt || isIOS)) {
+            setTimeout(() => { if (fab) fab.classList.add('show'); }, 400);
         }
+    };
+
+    /* ---- GLOBAL: header button handler ---- */
+    window.pwaTriggerInstall = async function () {
+        if (deferredPrompt) {
+            await triggerNativePrompt();
+        } else if (isIOS) {
+            showBanner();
+        } else {
+            showToast('Already installed or open in Chrome to install');
+        }
+    };
+
+    /* ---- Banner CTA handler ---- */
+    window.pwaBannerInstall = async function () {
+        if (deferredPrompt) {
+            await triggerNativePrompt();
+        } else if (!isIOS) {
+            showToast('Open in Chrome or Edge to install');
+        }
+        /* On iOS the steps already guide the user — no action needed */
+    };
+
+    /* ---- Trigger the native browser install dialog ---- */
+    async function triggerNativePrompt() {
+        if (!deferredPrompt) return;
+        haptic(30);
+        ctaBtn.disabled = true;
+        ctaBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg> Installing…';
+        try {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast('✅ Installing…');
+            } else {
+                showToast('Install cancelled');
+                ctaBtn.disabled = false;
+                ctaBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg> Install App — It\'s Free';
+            }
+        } catch(err) { console.warn('[PWA] Prompt error:', err); }
+        deferredPrompt = null;
+    }
+
+    /* ---- Swipe down on banner to dismiss ---- */
+    let startY = 0;
+    if (banner) {
+        banner.addEventListener('pointerdown', e => { startY = e.clientY; });
+        banner.addEventListener('pointerup', e => {
+            if (e.clientY - startY > 60) dismissBanner();
+        });
     }
 
 })();
