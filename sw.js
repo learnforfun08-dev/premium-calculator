@@ -1,146 +1,125 @@
 /* ================================================================
-   Premium Calculator — Service Worker
-   Strategy:
-     • App shell (index.html + icons) → Cache First
-     • Google Fonts                   → Stale-While-Revalidate
-     • Everything else                → Network First w/ cache fallback
+   Premium Calculator — Service Worker  (GitHub Pages build)
+   Scope: /premium-calculator/
 ================================================================ */
 
-const CACHE_NAME   = 'premium-calc-v1';
-const FONT_CACHE   = 'premium-calc-fonts-v1';
+const CACHE_NAME = 'premium-calc-v2';
+const FONT_CACHE = 'premium-calc-fonts-v1';
+const BASE       = '/premium-calculator';
 
-/* All files that make up the app shell — must be served for offline */
 const APP_SHELL = [
-    './index.html',
-    './manifest.json',
-    './icons/icon-192.png',
-    './icons/icon-512.png',
-    './icons/icon-maskable-192.png',
-    './icons/icon-maskable-512.png'
+    BASE + '/',
+    BASE + '/index.html',
+    BASE + '/manifest.json',
+    BASE + '/icons/icon-192.png',
+    BASE + '/icons/icon-512.png',
+    BASE + '/icons/icon-maskable-192.png',
+    BASE + '/icons/icon-maskable-512.png'
 ];
 
 /* ----------------------------------------------------------------
    INSTALL — pre-cache the app shell
 ---------------------------------------------------------------- */
 self.addEventListener('install', event => {
-    console.log('[SW] Installing…');
+    console.log('[SW] Installing v2…');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('[SW] Pre-caching app shell');
-                /* Use individual adds so one 404 doesn't break everything */
-                return Promise.allSettled(
-                    APP_SHELL.map(url => cache.add(url).catch(e => console.warn('[SW] Could not cache:', url, e)))
-                );
-            })
-            .then(() => self.skipWaiting())   /* activate immediately */
+        caches.open(CACHE_NAME).then(cache =>
+            Promise.allSettled(
+                APP_SHELL.map(url =>
+                    cache.add(url).catch(e => console.warn('[SW] Could not cache:', url, e))
+                )
+            )
+        ).then(() => self.skipWaiting())
     );
 });
 
 /* ----------------------------------------------------------------
-   ACTIVATE — delete old caches
+   ACTIVATE — delete old caches, claim all clients
 ---------------------------------------------------------------- */
 self.addEventListener('activate', event => {
-    console.log('[SW] Activating…');
+    console.log('[SW] Activating v2…');
     event.waitUntil(
-        caches.keys().then(keys =>
-            Promise.all(
-                keys
-                    .filter(k => k !== CACHE_NAME && k !== FONT_CACHE)
-                    .map(k => {
-                        console.log('[SW] Deleting old cache:', k);
-                        return caches.delete(k);
-                    })
-            )
-        ).then(() => self.clients.claim())    /* take control of all open tabs */
+        caches.keys()
+            .then(keys => Promise.all(
+                keys.filter(k => k !== CACHE_NAME && k !== FONT_CACHE)
+                    .map(k => caches.delete(k))
+            ))
+            .then(() => self.clients.claim())
     );
 });
 
 /* ----------------------------------------------------------------
-   FETCH — routing logic
+   FETCH — routing
 ---------------------------------------------------------------- */
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
 
-    /* 1. Google Fonts — Stale-While-Revalidate */
+    /* Skip non-GET */
+    if (event.request.method !== 'GET') return;
+
+    /* Google Fonts → stale-while-revalidate */
     if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
         event.respondWith(staleWhileRevalidate(event.request, FONT_CACHE));
         return;
     }
 
-    /* 2. App shell files — Cache First */
-    if (url.pathname === '/' ||
-        url.pathname.endsWith('index.html') ||
-        url.pathname.endsWith('manifest.json') ||
-        url.pathname.includes('/icons/')) {
+    /* App shell → cache first */
+    if (url.hostname === self.location.hostname &&
+        url.pathname.startsWith(BASE)) {
         event.respondWith(cacheFirst(event.request, CACHE_NAME));
         return;
     }
 
-    /* 3. Everything else — Network First with cache fallback */
+    /* Everything else → network first */
     event.respondWith(networkFirst(event.request, CACHE_NAME));
 });
 
 /* ----------------------------------------------------------------
-   STRATEGY HELPERS
+   STRATEGIES
 ---------------------------------------------------------------- */
-
-/** Cache First: serve from cache, fall back to network & update cache */
-async function cacheFirst(request, cacheName) {
-    const cached = await caches.match(request);
+async function cacheFirst(req, cacheName) {
+    const cached = await caches.match(req);
     if (cached) return cached;
     try {
-        const response = await fetch(request);
-        if (response && response.status === 200) {
+        const res = await fetch(req);
+        if (res && res.status === 200) {
             const cache = await caches.open(cacheName);
-            cache.put(request, response.clone());
+            cache.put(req, res.clone());
         }
-        return response;
-    } catch (err) {
-        console.warn('[SW] Cache first — network failed, no cache for:', request.url);
-        return new Response('Offline — resource not cached', { status: 503, statusText: 'Service Unavailable' });
+        return res;
+    } catch {
+        return new Response('Offline', { status: 503 });
     }
 }
 
-/** Network First: try network, fall back to cache */
-async function networkFirst(request, cacheName) {
+async function networkFirst(req, cacheName) {
     try {
-        const response = await fetch(request);
-        if (response && response.status === 200) {
+        const res = await fetch(req);
+        if (res && res.status === 200) {
             const cache = await caches.open(cacheName);
-            cache.put(request, response.clone());
+            cache.put(req, res.clone());
         }
-        return response;
-    } catch (err) {
-        const cached = await caches.match(request);
-        if (cached) return cached;
-        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        return res;
+    } catch {
+        return (await caches.match(req)) ||
+               new Response('Offline', { status: 503 });
     }
 }
 
-/** Stale-While-Revalidate: serve cache immediately, update in background */
-async function staleWhileRevalidate(request, cacheName) {
-    const cache = await caches.open(cacheName);
-    const cached = await cache.match(request);
-
-    const fetchPromise = fetch(request).then(response => {
-        if (response && response.status === 200) {
-            cache.put(request, response.clone());
-        }
-        return response;
-    }).catch(() => cached);   /* if network fails, fallback handled below */
-
-    return cached || fetchPromise;
+async function staleWhileRevalidate(req, cacheName) {
+    const cache  = await caches.open(cacheName);
+    const cached = await cache.match(req);
+    const fetchP = fetch(req).then(res => {
+        if (res && res.status === 200) cache.put(req, res.clone());
+        return res;
+    }).catch(() => cached);
+    return cached || fetchP;
 }
 
 /* ----------------------------------------------------------------
-   MESSAGE — allow pages to trigger SW actions
+   MESSAGES
 ---------------------------------------------------------------- */
 self.addEventListener('message', event => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
-    if (event.data && event.data.type === 'CLEAR_CACHE') {
-        caches.delete(CACHE_NAME).then(() => console.log('[SW] Cache cleared'));
-    }
+    if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+    if (event.data?.type === 'CLEAR_CACHE') caches.delete(CACHE_NAME);
 });
